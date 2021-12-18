@@ -1,0 +1,74 @@
+.form_custom
+    {
+        margin-top: 30px;
+        padding: 15px 15px;
+        border: 1px solid;
+        border-radius: 10px;
+    }
+
+.form_custom input, textarea
+    {
+        margin-left: 20px;
+        width: 80%;
+    }
+
+#div_select_province ul li
+    {
+        cursor: pointer;   
+    }
+
+.form_custom ul li:hover
+    {
+        background-color: rgb(171, 171, 171);
+    }
+
+.title_form
+    {
+        display: flex;
+        justify-content: center;
+    }
+
+
+.address
+    {
+        margin-top: 30px;
+        display: flex;
+    }
+
+.description_image
+    {
+        margin: 20px 30px;
+        width: 120px;
+        height: 120px;
+    }
+
+.cart
+    {
+        margin-top: 30px;
+        margin-bottom: 40px;
+        border: 1px solid;
+        border-radius: 10px;
+    }
+
+.div_title_cart
+    {
+        background: rgb(178, 178, 179);
+        border-top-right-radius: 10px;
+        border-top-left-radius: 10px;
+        border-bottom: 1px solid;
+    }
+
+.title_cart
+    {
+        display: flex;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+.infor_cart
+    {
+        padding: 20px 10px;
+        display: flex;
+        justify-content: space-between;
+    }
+

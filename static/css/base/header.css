@@ -1,0 +1,112 @@
+@font-face 
+  {
+    font-family: "Pacifico";
+    src: url("Pacifico-Regular.ttf") format("truetype");
+  }
+
+.mini-menu
+  {
+    color: whitesmoke;
+    position: absolute;
+    right: 20px;
+  }
+
+.mini-menu span
+  {
+      margin-right: 15px;
+      margin-top: 5px;
+  }
+
+
+.header
+  {
+    height: 180px;
+    background: url('https://taingheviet.com/themes/template/images/night-bg.png');
+  }
+
+.nav-bar
+  {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+
+.logo
+  {
+    display: flex;
+    align-items: center;
+  }
+
+.logo > img
+  {
+    border-radius: 50%;
+    height: 100px;
+  }
+
+.logo > span
+  {
+    color: whitesmoke;
+    margin-left: 20px;
+    font-family: Pacifico;
+    font-size: 1.8rem;
+  }
+
+.form
+  {
+    display: block;
+    display: flex;
+  }
+
+.form select
+  {
+    color: whitesmoke;
+    height: 40px;
+    font-size: 1.5rem;
+    padding-left: 5px;
+    background: none;
+    border-radius: 5px;
+    border-color:rgb(114, 114, 114);
+  }
+
+.form-input
+  {
+    border-radius: 8px;
+    border-color:whitesmoke;
+    display: flex;
+  }
+
+.form-input input
+  {
+    background: none;
+    color: whitesmoke;
+    font-size: 1.25rem;
+    padding-left: 10px;
+  }
+
+.form-input input:focus
+  {
+    outline: none;
+  }
+
+.form-input button
+  {
+    background: none;
+    color: whitesmoke;
+    font-weight: 300;
+  }
+
+.contacts
+  {
+    color: whitesmoke;
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+
+.mini-menu a
+  {
+    color: white;
+    text-decoration: none;
+
+  }

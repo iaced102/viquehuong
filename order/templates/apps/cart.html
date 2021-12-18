@@ -1,0 +1,114 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block css %}<link rel='stylesheet' type='text/css' href="{% static 'css/apps/cart.css' %}">{% endblock css %}
+{% block jsfile %}<script src="{% static 'js/apps/cart.js' %}"></script>{% endblock jsfile %}
+{% block body %}
+    {% if user.is_authenticated %}
+        <div class='container'>
+            <h3>{{ user}}</h3>
+            {% for product in cart.cart.all %}
+                <div class="product">
+                    <img class="description_image" src="{% if product.product.description_image.all|length == 0 %}{% static 'image/products/default.png' %}{% else %}/{{product.product.description_image.all.0.image}}{% endif %}">
+                    <div style="width: 30%">
+                        <p><strong id="name_{{ product.product.id }}">{{ product.product.name }}</strong></p>
+                        <button class="btn btn-danger"><i class="far fa-trash-alt"></i>    Xóa</button>
+                    </div>
+                    <div>
+                        <div class='container'>
+                            <div class='row price'>
+                                <div class='col'></div>
+                                <p id="price_{{ product.product.id }}" class='col'>{{ product.product.price }}</p>
+                                <div class='col'></div>
+                            </div>
+                            <div class='row change-count'>
+                                <p class='col button' style="border-right: rgb(92, 92, 92) solid 1px;" id="reduce_{{ product.product.id }}" onclick="reduce({{ product.product.id }})">-</p>
+                                <p id='count_{{ product.product.id }}' class='col' onchange='total({{ product.product.id }})'>{{ product.amount }}</p>
+                                <p class='col button' style="border-left: rgb(92, 92, 92) solid 1px;" onclick="add({{ product.product.id }})">+</p>
+                            </div>
+                            <div class='total'>
+                                <p>Thành tiền:</p>
+                                <p id='total_{{ product.product.id }}'></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+
+            {% endfor %}
+        </div>
+        <div class="footer-fixed">
+            <button id="save_cart" onclick='save_cart()'  class="btn btn-outline-success save-cart">Lưu số lượng mới</button>
+            <button id="buy_cart" class="btn btn-danger">Đặt mua</button>
+        </div>
+        <script>
+            var cart_amount = {
+                {% for item in cart.cart.all %}
+                    "{{ item.id }}": [{{ item.amount }}, {{ item.product.id }}],
+                {% endfor %}
+            }
+            $(document).ready(function(){
+                {% for product in cart.cart.all %}
+                    total({{ product.product.id }})
+                    if($("#count_{{ product.product.id }}").html() == 1)
+                        {
+                            $("#reduce_{{ product.product.id }}").attr('onclick', '');
+                            $("#reduce_{{ product.product.id }}").attr('style', 'cursor: not-allowed;border-right: rgb(92, 92, 92) solid 1px;');
+                        }
+                {% endfor %}
+                footer_button()
+            })
+            function footer_button()
+            {
+                let count =0
+                for(let item in cart_amount)
+                    {    
+                        if(cart_amount[item][0] != $(`#count_${cart_amount[item][1]}`).html())
+                            {
+                                count ++
+                            }
+                    }
+                if(count !=0)
+                    {
+                        $("#save_cart").attr("style", '')
+                    }
+                else
+                    {
+                        $("#save_cart").attr("style", 'display: none')
+                    }
+                
+            }
+        
+        function save_cart()
+            {
+                var a = confirm('Xác nhận thay đổi')
+                
+                if(a)
+                    {
+                        for(let item in cart_amount)
+                            {
+                                if(cart_amount[item][0] != $(`#count_${cart_amount[item][1]}`).html())
+                                    {
+                                        console.log('something')
+                                        $.ajax({
+                                            url: "{% url 'change_order' %}",
+                                            method: "POST",
+                                            data: {
+                                                'csrfmiddlewaretoken':'{{ csrf_token }}',
+                                                'id_order': item,
+                                                'new_amount': $(`#count_${ cart_amount[item][1] }`).html()
+                                                }
+                                        })
+                                    }
+                                cart_amount[item][0] = $(`#count_${ cart_amount[item][1] }`).html()
+                            }
+                    }
+                else
+                    {
+
+                    }
+                footer_button()
+            }
+            
+        </script>
+    {% endif %}
+{% endblock body %}

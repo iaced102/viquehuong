@@ -1,0 +1,172 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block css %}
+    <script src="{% static 'js/apps/list_products.js' %}"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/apps/list_product.css' %}">
+{% endblock css %}
+{% block title %}title nè{% endblock title %}
+
+    {% block body %}
+    
+    <div class='mx-auto' style="margin-top: 20px;">
+    <div class="card-group" style="position: relative;">
+        {% for item in products %}
+                <div class="wrapper" id="{{ item.id }}" style="margin-bottom: 20px">
+                    <div class="container">
+                        <div class="top" {% if item.description_image|length == 0 %}style="background: url({% static 'image/products/default.png' %}) no-repeat center center; "{% else %}style="background: url({{ item.description_image.0 }}) no-repeat center center; "{% endif %}></div>
+                        <div class="bottom">
+                            <div class="left">
+                                <div class="details">
+                                    <p><strong>{{ item.name }}</strong></p>
+                                    <p>{{ item.price}}đ</p>
+                                </div>
+                                <div class="buy" onclick="buy(this,{{ item.id }})"><i class="material-icons">add_shopping_cart</i></div>
+                            </div>
+                            <div class="right">
+                                <div class="details">
+                                    <p><strong>{{ item.name }}</strong></p>
+                                    <p>đã thêm vào giỏ hàng</p>
+                                </div>
+                                <div class="status">
+                                    <div class="done"><i class="material-icons">done</i></div>
+                                
+                                    <div class="remove" onclick="remove(this, {{ item.id }})"><i class="material-icons">clear</i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="inside">
+                        <div class="icon"><i class="material-icons">info_outline</i></div>
+                        <div class="contents">
+                            <div class='description' style="overflow: hidden">
+                                {{ item.description}}
+                            </div>
+                            <a href="{% url 'detail_product' pk=item.id %}" type="button" class="btn btn-info">Chi tiết</a>
+                        </div>
+                    </div>
+                </div>
+            
+        {% endfor %}
+    </div>
+    </div>
+    <script>
+        
+        var cart=localStorage.getItem("cart")
+            if("{{ user.is_authenticated }}" === "True")
+                {
+                    if(cart===null)
+                        {
+                            var render_cart=[];
+
+                        }
+                    else
+                        {
+                            var render_cart= JSON.parse(cart)
+                        }
+                    for(let i of render_cart)
+                        {
+                            for(let I = 0; I< i[1]; I++)
+                                {
+                                    $.ajax({
+                                        url: "{% url 'add_to_cart' %}",
+                                        method: "POST",
+                                        data: {
+                                            'csrfmiddlewaretoken':'{{ csrf_token }}',
+                                            'user': "{{ user.id }}",
+                                            'product': `${i[0]}`
+                                        }
+                                    })
+                                }
+                        }
+                    localStorage.setItem("cart",'[]')
+                    {% for item in cart.cart.all %}
+                        render_cart.push([{{ item.product.id }}, {{ item.amount }}])
+                    {% endfor %}
+                }
+            else
+                {
+                    if(cart===null)
+                        {
+                            var render_cart=[];
+
+                        }
+                    else
+                        {
+                            var render_cart= JSON.parse(cart)
+                        }
+                }
+        function render()
+            {
+                for(let item of render_cart)
+                    {
+                        let a=$(`#${item[0]}`).find(".bottom")
+                        a.addClass("clicked")
+                        
+                    }
+            }
+        render()
+
+        function buy(item, id_product)
+            {
+                item.parentElement.parentElement.classList.add('clicked')
+                if("{{ user.is_authenticated }}"=="True")
+                    {
+                        $.ajax({
+                                    url: "{% url 'add_to_cart' %}",
+                                    method: "POST",
+                                    data: {
+                                        'csrfmiddlewaretoken':'{{ csrf_token }}',
+                                        'user': "{{ user.id }}",
+                                        'product': id_product
+                                    }
+                                })
+                        render_cart.push([id_product,1])
+                        render_count_cart(render_cart)
+                    }
+                else
+                    {
+                        render_cart.push([id_product,1])
+                        localStorage.setItem("cart",JSON.stringify(render_cart))
+                        render_count_cart(render_cart)
+                    }
+            }
+        function remove(item, id_product)
+            {
+                item.parentElement.parentElement.parentElement.classList.remove('clicked')
+                if("{{ user.is_authenticated }}" === "True")
+                    {
+                        $.ajax({
+                                    url: "{% url 'delete_from_cart' %}",
+                                    method: "POST",
+                                    data: {
+                                        'csrfmiddlewaretoken':'{{ csrf_token }}',
+                                        'user': "{{ user.id }}",
+                                        'id_product': id_product
+                                    }
+                                })
+
+                        for(let i=0; i< render_cart.length; i++)
+                            {
+                                if(render_cart[i][0] === id_product)
+                                    {
+                                        render_cart.splice(i,1)
+                                        render_count_cart(render_cart)
+                                    }
+                            }
+                    }
+                else
+                    {
+                        for(let i=0; i< render_cart.length; i++)
+                            {
+                                if(render_cart[i][0] === id_product)
+                                    {
+                                        render_cart.splice(i,1)
+                                        localStorage.setItem("cart",JSON.stringify(render_cart))
+                                        render_count_cart(render_cart)
+                                    }
+                            }
+                    }
+            }
+    </script>
+    {% endblock body %}

@@ -1,0 +1,83 @@
+{% load static %}
+<script>
+    function render_count_cart(render_cart)
+        {
+           
+            if(render_cart.length === 0)
+                {
+                    $("#count-cart").css({"display": 'none'})
+                }
+            else
+                {
+                    $("#count-cart").addClass("animate__animated animate__zoomIn animate__faster")
+                    $("#count-cart").html(`${render_cart.length}`)
+                    $("#count-cart").css({"display": 'inline-block'})
+                    
+                }
+        }
+    $(document).ready(function(){
+        let cart = localStorage.getItem("cart")
+        if(cart === null)
+            {
+                var render_cart = []
+            }
+        else
+            {
+                var render_cart = JSON.parse(cart)
+            }
+        if("{{ user.is_authenticated }}"=='True')
+                {
+                    for(let i of render_cart)
+                        {
+                            for(let I = 0; I< i[1]; I++)
+                                {
+                                    $.ajax({
+                                        url: "{% url 'add_to_cart' %}",
+                                        method: "POST",
+                                        data: {
+                                            'csrfmiddlewaretoken':'{{ csrf_token }}',
+                                            'user': "{{ user.id }}",
+                                            'product': `${i[0]}`
+                                        }
+                                    })
+                                }
+                        }
+                    localStorage.setItem("cart",'[]')
+                    {% for item in cart.cart.all %}
+                        render_cart.push([{{ item.product.id }}, {{ item.amount }}])
+                    {% endfor %}
+                }
+        render_count_cart(render_cart)})
+</script>
+<header>
+    <div class="header">
+        <div class='mini-menu'>
+            <a href="{% url 'cart' %}">
+                <span id="count-cart" style="width: 22px; font-size: 0.8rem;text-align:center; font-weight: 500 ; height: 17px;position: relative ;left:26px; bottom:4px; display: none; border-radius: 50%; background: red;"></span>
+                <span><i class="fas fa-shopping-cart"></i>    Đơn hàng</span>
+            </a>
+            <span><i class="fas fa-user-plus"></i>    Đăng ký</span>
+            <span><i class="fas fa-lock"></i>    Đăng nhập</span>
+        </div>
+        <nav class='container nav-bar'>
+            <div class='logo' style="height: 100%;">
+                <img src="{% static 'image/logo/logo-viquehuong.png' %}">
+                <span>Vị Quê Hương</span>
+            </div>
+            <div class="form">
+                <select name="cars" id="cars" form="carform">
+                    <option value="all">Danh mục</option>
+                    {% for category in type %}
+                        <option value="{{ category.type }}">{{ category.type }}</option>                    
+                    {% endfor %}
+                </select>
+                <div class='form-input'>
+                    <input type='text' placeholder="Tìm kiếm">
+                    <button><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+            <span class='contacts'><i class="fas fa-phone-alt"></i>    Liên hệ: 0962552111</span>
+        </nav>
+        
+    </div>
+</header>
