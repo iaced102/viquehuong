@@ -4,14 +4,14 @@
 {% block jsfile %}<script src="{% static 'js/apps/cart.js' %}"></script>{% endblock jsfile %}
 {% block body %}
     {% if user.is_authenticated %}
-        <div class='container'>
+        <div id="main" class='container'>
             <h3>{{ user}}</h3>
             {% for product in cart.cart.all %}
                 <div class="product">
                     <img class="description_image" src="{% if product.product.description_image.all|length == 0 %}{% static 'image/products/default.png' %}{% else %}/{{product.product.description_image.all.0.image}}{% endif %}">
                     <div style="width: 30%">
                         <p><strong id="name_{{ product.product.id }}">{{ product.product.name }}</strong></p>
-                        <button class="btn btn-danger"><i class="far fa-trash-alt"></i>    Xóa</button>
+                        <button onclick='remove_cart({{ product.id }})' class="btn btn-danger"><i class="far fa-trash-alt"></i>    Xóa</button>
                     </div>
                     <div>
                         <div class='container'>
@@ -31,21 +31,27 @@
                             </div>
                         </div>
                     </div>
-                    
+                    <div>
+                        <input type='checkbox' value="{{ product.id }}" onclick='check_checkbox(this)' >
+                    </div>
                 </div>
 
             {% endfor %}
         </div>
         <div class="footer-fixed">
             <button id="save_cart" onclick='save_cart()'  class="btn btn-outline-success save-cart">Lưu số lượng mới</button>
-            <button id="buy_cart" class="btn btn-danger">Đặt mua</button>
+            <button id="buy_cart" onclick='buy_order()' class="btn btn-danger">Đặt mua</button>
         </div>
         <script>
+            footer_button()
             var cart_amount = {
                 {% for item in cart.cart.all %}
                     "{{ item.id }}": [{{ item.amount }}, {{ item.product.id }}],
                 {% endfor %}
             }
+            
+
+
             $(document).ready(function(){
                 {% for product in cart.cart.all %}
                     total({{ product.product.id }})
@@ -57,26 +63,7 @@
                 {% endfor %}
                 footer_button()
             })
-            function footer_button()
-            {
-                let count =0
-                for(let item in cart_amount)
-                    {    
-                        if(cart_amount[item][0] != $(`#count_${cart_amount[item][1]}`).html())
-                            {
-                                count ++
-                            }
-                    }
-                if(count !=0)
-                    {
-                        $("#save_cart").attr("style", '')
-                    }
-                else
-                    {
-                        $("#save_cart").attr("style", 'display: none')
-                    }
-                
-            }
+            
         
         function save_cart()
             {
@@ -108,7 +95,59 @@
                     }
                 footer_button()
             }
-            
+        function remove_cart(id)
+            {
+                var a = confirm('Xác nhận thay đổi')
+                if(a)
+                    {
+                        $.ajax({
+                            url: "{% url 'delete_order' %}",
+                            method: "POST",
+                            data: {
+                                'csrfmiddlewaretoken':'{{ csrf_token }}',
+                                'id_order': id,
+                            },
+                            success: function(data){
+                                alert("thành công")
+                                location.reload()
+                            }
+                        })
+                    }
+                else
+                    {
+
+                    }
+            }
+        
+
+        function buy_order()
+            {
+                let list_order = ''
+                for(let i in cart_buy)
+                    {
+                        if(i == 0)
+                            {
+                                list_order += cart_buy[i]
+                            }
+                        else
+                            {
+                                list_order += ','+ cart_buy[i]
+                            }
+                    }
+                $.ajax({
+                    url: "{% url 'cart' %}",
+                    method: "POST",
+                    data: {
+                        'csrfmiddlewaretoken':'{{ csrf_token }}',
+                        'order': list_order
+                    },
+                    success: function(data){
+                        window.location = 'cart/'+data
+                    }
+                })
+                
+                
+            }
         </script>
     {% endif %}
 {% endblock body %}

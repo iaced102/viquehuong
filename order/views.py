@@ -1,9 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import reverse
 from products.models import Product
-from .models import Order, Cart, Active_Order
+from .models import Order, Cart, Active_Order, Non_Active_Order
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.base import TemplateView
 from django.contrib.auth import get_user_model
 # Create your views here.
@@ -18,7 +18,6 @@ def buy_product(request, product, amount):
     context['amount'] = amount
     if request.user.is_authenticated:
         get_cart = Q(user__username = request.user.username)
-        get_cart.add(Q(status = False), Q.AND)
         context['cart'] = Cart.objects.get(get_cart)
     return render(request, 'apps/buy_product.html', context= context)
 
@@ -26,7 +25,7 @@ def buy_product(request, product, amount):
 
 def active_buy_product(request):
     if request.method == "POST":
-        if len(request.POST['product']) ==1:
+        if ',' not in request.POST['product']:
             product = Product.objects.get(id = int(request.POST['product']))
             order = Order.objects.create(product=product, amount = int(request.POST['amount']))
             active_cart = Active_Order.objects.create(address= request.POST['address'], customer_name=request.POST['customer_name'], phone_number=request.POST['phone_number'], total_price=order.product.price*order.amount, note= request.POST['note'])
@@ -40,9 +39,19 @@ class Open_Cart(TemplateView):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             get_cart = Q(user__username = self.request.user.username)
-            get_cart.add(Q(status = False), Q.AND)
             context['cart'] = Cart.objects.get(get_cart)
         return context
+
+    def post(self, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            list_order = self.request.POST['order'].split(',')
+            Non_Active_Order.objects.filter(user = self.request.user).delete()
+            cart = Non_Active_Order.objects.create(user= self.request.user)
+            for order in list_order:
+                cart.cart.add(Order.objects.get(id= int(order)))
+                cart.save()
+            return HttpResponse(cart.id)
+    
 
 
 def change_order(request):
@@ -52,12 +61,14 @@ def change_order(request):
         order.save()
         return HttpResponse("success")
 
-'''$.ajax({
-                                    url: "{% url 'change_order' %}",
-                                    method: "POST",
-                                    data: {
-                                        'csrfmiddlewaretoken':'{{ csrf_token }}',
-                                        'id_order': item,
-                                        'new_amount': $(`#count_${ cart_amount[item][1] }`).html()
-                                        }
-                                })'''
+def delete_order(request):
+    if request.method == "POST":
+        Order.objects.get(id=request.POST['id_order']).delete()
+        return HttpResponse("success")
+
+
+def cart(request, cart):
+    print(cart)
+    context = {}
+    context['cart'] = Non_Active_Order.objects.get(user= request.user)
+    return render(request,template_name='apps/non_cart.html', context=context)

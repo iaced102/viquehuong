@@ -25,7 +25,6 @@ class List_Products(TemplateView):
 
         if self.request.user.is_authenticated:
             get_cart = Q(user__username = self.request.user.username)
-            get_cart.add(Q(status = False), Q.AND)
             context['cart'] = Cart.objects.get(get_cart)
         return context
     
@@ -42,7 +41,6 @@ class Detail_Product(DetailView):
         context['list_product'] = Product.objects.all()
         if self.request.user.is_authenticated:
             get_cart = Q(user__username = self.request.user.username)
-            get_cart.add(Q(status = False), Q.AND)
             context['cart'] = Cart.objects.get(get_cart)
         return context
 
@@ -50,7 +48,6 @@ class Detail_Product(DetailView):
 def add_to_cart(request):
     if request.method == 'POST':
         filter_cart = Q(user__id=request.POST['user'])
-        filter_cart.add(Q(status=False), Q.AND)
         cart = Cart.objects.filter(filter_cart)
         if len(cart) == 0:
             new_cart = Cart.objects.create(user = User.objects.get(id=request.POST['user']))         
@@ -78,7 +75,6 @@ def add_to_cart(request):
 def delete_from_cart(request):
     if request.method == 'POST':
         filter_cart = Q(user__id=request.POST['user'])
-        filter_cart.add(Q(status=False), Q.AND)
         cart = Cart.objects.filter(filter_cart)
         for order in cart[0].cart.all():
             if order.product.id == int(request.POST['id_product']):

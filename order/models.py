@@ -15,19 +15,28 @@ class Order(models.Model):
 
 
 class Cart(models.Model):
-    user        = models.ForeignKey(User, on_delete=models.CASCADE)
+    user        = models.ForeignKey(User, on_delete=models.CASCADE, blank=True)
     cart        = models.ManyToManyField(Order)
     amount      = models.PositiveIntegerField(default=0)
     total_amout = models.PositiveIntegerField(default=0)
-    status      = models.BooleanField(default=False)
     def __str__(self):
         return str(self.user)
+
 
 class History_Cart(models.Model):
     carts   = models.ManyToManyField(Cart)
     user    = models.ForeignKey(User, on_delete=models.CASCADE)
     def __str__(self):
         return self.user
+
+
+class Non_Active_Order(models.Model):
+    user        = models.ForeignKey(User, on_delete=models.CASCADE, blank=True)
+    cart        = models.ManyToManyField(Order)
+    amount      = models.PositiveIntegerField(default=0)
+    total_amout = models.PositiveIntegerField(default=0)
+    def __str__(self):
+        return str(self.user)
 
 
 class Active_Order(models.Model):
