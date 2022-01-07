@@ -4,7 +4,7 @@
 {% block body %}
     <div id='main'>
         <div id="background"></div>
-        <div class='container' id="comfirm_order" style="display:none">
+        <div class='container comfirm' id="comfirm_order" style="display:none">
             <h2>Xác nhận đơn hàng</h2>
             <p>họ tên khách hàng: <span id="comfirm_name_customer"></span></p>
             <p>số điện thoại liên hệ: <span id="comfirm_phone_number_customer"></span></p>
@@ -73,35 +73,37 @@
                 <div class='div_title_cart'>
                     <h2 class='title_cart'>Đơn hàng</h2>
                 </div>
-                <div class='infor_cart'>
-                    <img class="description_image" src="{% if product.description_image.all|length == 0 %}{% static 'image/products/default.png' %}{% else %}/{{ product.description_image.all.0.image}}{% endif %}">
-                    <div>
-                        <p><strong>{{ product.name }}</strong></p>
-                    </div>
-                    <div>
-                        <div class='container'>
-                            <div class='row'>
-                                <div class='col'></div>
-                                <p class='col'>{{ product.price }}</p>
-                                <div class='col'></div>
-                            </div>
-                            <div class='row'>
-                                <div class='col'></div>
-                                <p class='col'>x</p>
-                                <div class='col'></div>
-                            </div>
-                            <div class='row'>
-                                <button class='col' id="reduce" style="font-size:1.3rem; height: 40px; width:40px; color: red;border-radius: 5px; border-color:red; background:none" onclick="reduce()">-</button>
-                                <p id='count' class='col' style="margin: 0 15px;" onchange='total()'>{{ amount }}</p>
-                                <button class='col' style="font-size:1.3rem; height: 40px; width:40px; color: red;border-radius: 5px; border-color:red; background:none" onclick="add()">+</button>
-                            </div>
-                            <div class='row'>
-                                <p class='col'>tổng:</p>
-                                <p class='col' id='total'></p>
+                {% for product in non_cart.cart.all %}
+                    <div class='infor_cart'>
+                        <img class="description_image" src="{% if product.product.description_image.all|length == 0 %}{% static 'image/products/default.png' %}{% else %}/{{ product.product.description_image.all.0.image}}{% endif %}">
+                        <div style="width: 30%;">
+                            <p><strong>{{ product.product.name }}</strong></p>
+                        </div>
+                        <div>
+                            <div class='container'>
+                                <div class='row'>
+                                    <div class='col'></div>
+                                    <p id="price_{{ product.id }}" class='col'>{{ product.product.price }}</p>
+                                    <div class='col'></div>
+                                </div>
+                                <div class='row'>
+                                    <div class='col'></div>
+                                    <p class='col'>x</p>
+                                    <div class='col'></div>
+                                </div>
+                                <div class='row'>
+                                    <button class='col' id="reduce_{{ product.id }}" style="font-size:1.3rem; height: 40px; width:40px; color: red;border-radius: 5px; border-color:red; background:none" onclick="reduce({{ product.id }})">-</button>
+                                    <p id='count_{{ product.id }}' class='col' style="margin: 0 15px;" onchange='total()'>{{ product.amount }}</p>
+                                    <button class='col' style="font-size:1.3rem; height: 40px; width:40px; color: red;border-radius: 5px; border-color:red; background:none" onclick="add({{ product.id }})">+</button>
+                                </div>
+                                <div class='row'>
+                                    <p class='col'>tổng:</p>
+                                    <p class='col' id='total_{{ product.id }}'></p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                {% endfor %}
                 <div style='display: flex'>
                     <button style="margin: 15px auto;" onclick='buy()' class="btn btn-success buy-button">xác nhận đặt hàng</button>
                 </div>
@@ -115,8 +117,15 @@
         var districts 
         var warnd
         $(document).ready(function(){
-            total()
-            $("#reduce").attr('disabled', true);
+            
+            {% for product in non_cart.cart.all %}
+                total({{ product.id }})
+                if({{ product.amount }} == 1)
+                {
+                    total({{ product.id }})
+                    $("#reduce_{{ product.id }}").attr('disabled', true);
+                }
+            {% endfor %}
             $.ajax({
                 url: 'https://provinces.open-api.vn/api/?depth=3',
                 type: 'get',
@@ -251,65 +260,80 @@
             }
 
 
-        function add()
+        function add(id)
             {
-                
-                $("#count").html(parseInt($("#count").html())+1)
-                if($("#count").html()==1)
+                $(`#count_${id}`).html(parseInt($(`#count_${id}`).html())+1)
+                if($(`#count_${id}`).html()==1)
                     {
-                        $("#reduce").attr('disabled', true);
+                        $(`#reduce_${id}`).attr('disabled', true);
                     }
                 else
                     {
-                        $("#reduce").attr('disabled', false);
+                        $(`#reduce_${id}`).attr('disabled', false);
                     }
-                total()
+                total(id)
             }
 
-        function reduce()
+        function reduce(id)
             {
-                $("#count").html(parseInt($("#count").html())-1)
-                if($("#count").html()==1)
+                $(`#count_${id}`).html(parseInt($(`#count_${id}`).html())-1)
+                if($(`#count_${id}`).html()==1)
                     {
-                        $("#reduce").attr('disabled', true);
+                        $(`#reduce_${id}`).attr('disabled', true);
                     }
                 else
                     {
-                        $("#reduce").attr('disabled', false);
+                        $(`#reduce_${id}`).attr('disabled', false);
                     }
-                total()
+                total(id)
             }
 
-        function total()
+        function total(id)
             {
-                $("#total").html({{ product.price }}*$("#count").html())
+                setTimeout(()=>{
+                    $.ajax({
+                            url: "{% url 'change_order' %}",
+                            method: "POST",
+                            data: {
+                                'csrfmiddlewaretoken':'{{ csrf_token }}',
+                                "id_order": id,
+                                "new_amount": $(`#count_${id}`).html()
+                            }
+
+                        })
+                }, 0)
+                $(`#total_${id}`).html($(`#price_${id}`).html()*$(`#count_${id}`).html())
             }
 
         function buy()
             {
                 let address = $("#address").val() + ', ' + $("#input_select_warnd").val() + ', ' + $("#input_select_district").val() +', ' + $("#input_select_province").val()
-                let price = {{ product.price }} * $("#count").html()
+                let price = 0
+                {% for product in non_cart.cart.all %}
+                    price += $("#price_{{ product.id }}").html()*$("#count_{{ product.id }}").html();
+                {% endfor %}
+                //let price = {{ product.price }} * $("#count").html()
                 $("#comfirm_name_customer").html($("#name").val())
                 $("#comfirm_phone_number_customer").html($("#phone_number").val())
                 $("#comfirm_address_customer").html(address)
                 $("#comfirm_list_order").html(`<tr>
-                    {% for product in cart.cart %}
+                    {% for product in non_cart.cart.all %}
                         <th scope="row">{{ forloop.counter }}</th>
                         <td>{{ product.product.name }}</td>
                         <td>{{ product.product.price }}</td>
-                        <td>${$("#count").html()}</td>
-                        <td>${price}</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td colspan="4">Thành tiền:</td>
-                        <td>${price}</td>
+                        <td>${$("#count_{{ product.id }}").html()}</td>
+                        <td>${$("#price_{{ product.id }}").html()*$("#count_{{ product.id }}").html()}</td>
                     </tr>
                   {% endfor %}
+                  <tr>
+                    <td></td>
+                    <td colspan="3">Thành tiền:</td>
+                    <td>${price}</td>
+                </tr>
                   `)
                 $('#background').attr('style', 'position: fixed; width: 100%; height: 100%; background-color: black;opacity: 0.4; top: 0px;')
                 $("#comfirm_note").html('<span>*note:</span>'+$("#note").val())
-                $("#comfirm_order").attr("style", 'display:block; position: fixed; background-color: white; padding:20px 15px; z-index: 2;')
+                $("#comfirm_order").attr("style", 'display:block; position: fixed; left: 0;right: 0; margin: 0 30px; background-color: white; padding:20px 15px; z-index: 2;')
                 $("#comfirm_order").attr('class', 'shadow p-3 mb-5 bg-white rounded')
             }
         function comfirm_buy()
@@ -320,8 +344,7 @@
                     method: 'POST',
                     data: {
                         'csrfmiddlewaretoken':'{{ csrf_token }}',
-                        'product': {{ product.id }},
-                        'amount': $("#count").html(),
+                        'cart': {{ id }},
                         'address': address,
                         'customer_name': $("#name").val(),
                         'phone_number': $("#phone_number").val(),
@@ -329,9 +352,14 @@
                     },
                 success: function(result)
                     {
-                        $("#comfirm_order").attr("style", 'display:none')
-                        alert("đặt hàng thành công")
-                        $('#background').attr('style', 'display: none')
+                        if(result =='success')
+                            {
+                                $("#comfirm_order").attr("style", 'display:none')
+                                alert("đặt hàng thành công")
+                                $('#background').attr('style', 'display: none')
+                                for(let i in JSON.parse(localStorage.getItem("cart")))
+                                history.go(-1)
+                            }
 
                     }
                 })

@@ -56,13 +56,12 @@ function footer_button()
     {
         let count =0
         for(let item in cart_amount)
-            {    
+            {
                 if(cart_amount[item][0] != $(`#count_${cart_amount[item][1]}`).html())
                     {
                         count ++
                     }
             }
-
         if(count !=0)
             {
                 $("#save_cart").attr("style", '')
@@ -101,6 +100,5 @@ function check_checkbox(item)
             {
                 cart_buy.splice(cart_buy.indexOf(item.value), 1)
             }
-        console.log(cart_buy)
         footer_button()
     }

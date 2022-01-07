@@ -314,7 +314,7 @@
             {
                 let address = $("#address").val() + ', ' + $("#input_select_warnd").val() + ', ' + $("#input_select_district").val() +', ' + $("#input_select_province").val()
                 $.ajax({
-                    url: "{% url 'active_cart' %}",
+                    url: "{% url 'active_buy_product' %}",
                     method: 'POST',
                     data: {
                         'csrfmiddlewaretoken':'{{ csrf_token }}',

@@ -15,7 +15,7 @@ class Order(models.Model):
 
 
 class Cart(models.Model):
-    user        = models.ForeignKey(User, on_delete=models.CASCADE, blank=True)
+    user        = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     cart        = models.ManyToManyField(Order)
     amount      = models.PositiveIntegerField(default=0)
     total_amout = models.PositiveIntegerField(default=0)

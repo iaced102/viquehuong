@@ -6,62 +6,106 @@
     {% if user.is_authenticated %}
         <div id="main" class='container'>
             <h3>{{ user}}</h3>
-            {% for product in cart.cart.all %}
-                <div class="product">
-                    <img class="description_image" src="{% if product.product.description_image.all|length == 0 %}{% static 'image/products/default.png' %}{% else %}/{{product.product.description_image.all.0.image}}{% endif %}">
-                    <div style="width: 30%">
-                        <p><strong id="name_{{ product.product.id }}">{{ product.product.name }}</strong></p>
-                        <button onclick='remove_cart({{ product.id }})' class="btn btn-danger"><i class="far fa-trash-alt"></i>    Xóa</button>
-                    </div>
-                    <div>
-                        <div class='container'>
-                            <div class='row price'>
-                                <div class='col'></div>
-                                <p id="price_{{ product.product.id }}" class='col'>{{ product.product.price }}</p>
-                                <div class='col'></div>
-                            </div>
-                            <div class='row change-count'>
-                                <p class='col button' style="border-right: rgb(92, 92, 92) solid 1px;" id="reduce_{{ product.product.id }}" onclick="reduce({{ product.product.id }})">-</p>
-                                <p id='count_{{ product.product.id }}' class='col' onchange='total({{ product.product.id }})'>{{ product.amount }}</p>
-                                <p class='col button' style="border-left: rgb(92, 92, 92) solid 1px;" onclick="add({{ product.product.id }})">+</p>
-                            </div>
-                            <div class='total'>
-                                <p>Thành tiền:</p>
-                                <p id='total_{{ product.product.id }}'></p>
+                {% for product in cart.cart.all %}
+                    <div class="product">
+                        <img class="description_image" src="{% if product.product.description_image.all|length == 0 %}{% static 'image/products/default.png' %}{% else %}/{{product.product.description_image.all.0.image}}{% endif %}">
+                        <div style="width: 30%">
+                            <p><strong id="name_{{ product.product.id }}">{{ product.product.name }}</strong></p>
+                            <button onclick='remove_cart({{ product.id }})' class="btn btn-danger"><i class="far fa-trash-alt"></i>    Xóa</button>
+                        </div>
+                        <div>
+                            <div class='container'>
+                                <div class='row price'>
+                                    <div class='col'></div>
+                                    <p id="price_{{ product.product.id }}" class='col'>{{ product.product.price }}</p>
+                                    <div class='col'></div>
+                                </div>
+                                <div class='row change-count'>
+                                    <p class='col button' style="border-right: rgb(92, 92, 92) solid 1px;" id="reduce_{{ product.product.id }}" onclick="reduce({{ product.product.id }})">-</p>
+                                    <p id='count_{{ product.product.id }}' class='col' onchange='total({{ product.product.id }})'>{{ product.amount }}</p>
+                                    <p class='col button' style="border-left: rgb(92, 92, 92) solid 1px;" onclick="add({{ product.product.id }})">+</p>
+                                </div>
+                                <div class='total'>
+                                    <p>Thành tiền:</p>
+                                    <p id='total_{{ product.product.id }}'></p>
+                                </div>
                             </div>
                         </div>
+                        <div>
+                            <input type='checkbox' value="{{ product.id }}" onclick='check_checkbox(this)' >
+                        </div>
                     </div>
-                    <div>
-                        <input type='checkbox' value="{{ product.id }}" onclick='check_checkbox(this)' >
-                    </div>
-                </div>
-
-            {% endfor %}
+    
+                {% endfor %}
+    {% else %}
+        <div id="main_product" class="container">
+        </div>
+        
+        <script>
+            var cart = JSON.parse(localStorage.getItem("cart"))
+            for(let item of cart)
+                {
+                    let name
+                    let description_image
+                    let price
+                    let amount = item[1]
+                    $.ajax({
+                            url: "{% url 'open_cart_when_user_is_not_authenticated' %}",
+                            method: "GET",
+                            data: {
+                                    'product': item[0]
+                                },
+                            success: function(data) {
+                                    $("#main_product").append(data.replace('${amount}', amount))
+                                    setTimeout(()=>{
+                                        total(item[0])
+                                    },0)
+                                }
+                        })
+                    
+                   
+                }
+        </script>
+    {% endif %}
         </div>
         <div class="footer-fixed">
             <button id="save_cart" onclick='save_cart()'  class="btn btn-outline-success save-cart">Lưu số lượng mới</button>
             <button id="buy_cart" onclick='buy_order()' class="btn btn-danger">Đặt mua</button>
         </div>
         <script>
-            footer_button()
+            {% if user.is_authenticated %}
             var cart_amount = {
                 {% for item in cart.cart.all %}
                     "{{ item.id }}": [{{ item.amount }}, {{ item.product.id }}],
                 {% endfor %}
             }
-            
+            {% else %}
+                var cart_amount = {}
+                for(let item of JSON.parse(localStorage.getItem("cart")))
+                    {
+                        cart_amount[item[0]] = [item[1],item[0]]
+                    }
+            {% endif %}
 
 
             $(document).ready(function(){
-                {% for product in cart.cart.all %}
-                    total({{ product.product.id }})
-                    if($("#count_{{ product.product.id }}").html() == 1)
-                        {
-                            $("#reduce_{{ product.product.id }}").attr('onclick', '');
-                            $("#reduce_{{ product.product.id }}").attr('style', 'cursor: not-allowed;border-right: rgb(92, 92, 92) solid 1px;');
-                        }
-                {% endfor %}
-                footer_button()
+                {% if user.is_authenticated %}
+                    {% for product in cart.cart.all %}
+                        total({{ product.product.id }})
+                        if($("#count_{{ product.product.id }}").html() == 1)
+                            {
+                                $("#reduce_{{ product.product.id }}").attr('onclick', '');
+                                $("#reduce_{{ product.product.id }}").attr('style', 'cursor: not-allowed;border-right: rgb(92, 92, 92) solid 1px;');
+                            }
+                    {% endfor %}
+                {% else %}
+                
+                
+                {% endif %}
+                setTimeout(()=>{
+                    footer_button()
+                    console.log('footer')
+                },0)
             })
             
         
@@ -71,23 +115,34 @@
                 
                 if(a)
                     {
-                        for(let item in cart_amount)
-                            {
-                                if(cart_amount[item][0] != $(`#count_${cart_amount[item][1]}`).html())
-                                    {
-                                        console.log('something')
-                                        $.ajax({
-                                            url: "{% url 'change_order' %}",
-                                            method: "POST",
-                                            data: {
-                                                'csrfmiddlewaretoken':'{{ csrf_token }}',
-                                                'id_order': item,
-                                                'new_amount': $(`#count_${ cart_amount[item][1] }`).html()
-                                                }
-                                        })
-                                    }
-                                cart_amount[item][0] = $(`#count_${ cart_amount[item][1] }`).html()
-                            }
+                        {% if uset.is_authenticated %}
+                            for(let item in cart_amount)
+                                {
+                                    if(cart_amount[item][0] != $(`#count_${cart_amount[item][1]}`).html())
+                                        {
+                                            console.log('something')
+                                            $.ajax({
+                                                url: "{% url 'change_order' %}",
+                                                method: "POST",
+                                                data: {
+                                                    'csrfmiddlewaretoken':'{{ csrf_token }}',
+                                                    'id_order': item,
+                                                    'new_amount': $(`#count_${ cart_amount[item][1] }`).html()
+                                                    }
+                                            })
+                                        }
+                                    cart_amount[item][0] = $(`#count_${ cart_amount[item][1] }`).html()
+                                }
+                        {% else %}
+                            let cart = []
+                            for(let item in cart_amount)
+                                {
+                                    cart_amount[item][0] = $(`#count_${ cart_amount[item][1] }`).html()
+                                    cart.push([cart_amount[item][1],cart_amount[item][0]])
+
+                                }
+                            localStorage.setItem("cart",JSON.stringify(cart))
+                        {% endif %}
                     }
                 else
                     {
@@ -122,32 +177,56 @@
 
         function buy_order()
             {
-                let list_order = ''
-                for(let i in cart_buy)
-                    {
-                        if(i == 0)
-                            {
-                                list_order += cart_buy[i]
-                            }
-                        else
-                            {
-                                list_order += ','+ cart_buy[i]
-                            }
-                    }
-                $.ajax({
-                    url: "{% url 'cart' %}",
-                    method: "POST",
-                    data: {
-                        'csrfmiddlewaretoken':'{{ csrf_token }}',
-                        'order': list_order
-                    },
-                    success: function(data){
-                        window.location = 'cart/'+data
-                    }
-                })
-                
-                
+                {% if user.is_authenticated %}
+                    let list_order = ''
+                    for(let i in cart_buy)
+                        {
+                            if(i == 0)
+                                {
+                                    list_order += cart_buy[i]
+                                }
+                            else
+                                {
+                                    list_order += ','+ cart_buy[i]
+                                }
+                        }
+                    $.ajax({
+                        url: "{% url 'cart' %}",
+                        method: "POST",
+                        data: {
+                            'csrfmiddlewaretoken':'{{ csrf_token }}',
+                            'order': list_order
+                        },
+                        success: function(data){
+                            window.location = 'cart/'+data
+                        }
+                    })
+                {% else %}
+                    let list_order = ''
+                    for(let i in cart_buy)
+                        {
+                            if(i == 0)
+                                {
+                                    list_order += cart_buy[i]+'-'+$(`#count_${ cart_buy[i] }`).html()
+                                }
+                            else
+                                {
+                                    list_order += ','+ cart_buy[i]+'-'+$(`#count_${ cart_buy[i] }`).html()
+                                }
+                        }
+                    $.ajax({
+                        url: "{% url 'cart' %}",
+                        method: "POST",
+                        data: {
+                            'csrfmiddlewaretoken':'{{ csrf_token }}',
+                            'order': list_order
+                        },
+                        success: function(data){
+                            window.location = 'cart/'+data
+                        }
+                    })
+                {% endif %}
             }
         </script>
-    {% endif %}
+    
 {% endblock body %}

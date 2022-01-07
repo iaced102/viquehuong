@@ -80,3 +80,7 @@ def delete_from_cart(request):
             if order.product.id == int(request.POST['id_product']):
                 order.delete()
                 return HttpResponse("success")
+
+
+def get_detail(request):
+    HttpResponse('sucess')

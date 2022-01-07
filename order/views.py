@@ -3,8 +3,9 @@ from django.urls import reverse
 from products.models import Product
 from .models import Order, Cart, Active_Order, Non_Active_Order
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect,JsonResponse
 from django.views.generic.base import TemplateView
+import json
 from django.contrib.auth import get_user_model
 # Create your views here.
 
@@ -51,6 +52,15 @@ class Open_Cart(TemplateView):
                 cart.cart.add(Order.objects.get(id= int(order)))
                 cart.save()
             return HttpResponse(cart.id)
+        else:
+            list_order = self.request.POST['order'].split(',')
+            cart = Non_Active_Order.objects.create(user= User.objects.get(id=1))
+            for order in list_order:
+                infor = order.split('-')
+                order = Order.objects.create(product=Product.objects.get(id=int(infor[0])), amount = int(infor[1]))
+                cart.cart.add(order)
+                cart.save()
+            return HttpResponse(cart.id)
     
 
 
@@ -68,7 +78,40 @@ def delete_order(request):
 
 
 def cart(request, cart):
-    print(cart)
     context = {}
-    context['cart'] = Non_Active_Order.objects.get(user= request.user)
+    if(request.user.is_authenticated):
+        context['id'] = cart
+        context['cart'] = Cart.objects.get(user = request.user)
+        context['non_cart'] = Non_Active_Order.objects.get(user= request.user)
+    else:
+        context['id'] = cart
+        context['non_cart'] = Non_Active_Order.objects.get(id=cart)
     return render(request,template_name='apps/non_cart.html', context=context)
+
+
+def active_cart(request):
+    if request.method == "POST":
+        cart = Non_Active_Order.objects.get(id = request.POST['cart'])
+        active_cart = Active_Order.objects.create(address= request.POST['address'], customer_name=request.POST['customer_name'], phone_number=request.POST['phone_number'], note= request.POST['note'])
+        if request.user.is_authenticated:
+            user_cart = Cart.objects.get(id = request.user.id)
+            for order in cart.cart.all():
+                active_cart.list_order.add(order)
+                active_cart.save()
+                user_cart.cart.remove(order)
+                
+            return HttpResponse('success')
+        else:
+            for order in cart.cart.all():
+                active_cart.list_order.add(order)
+                active_cart.save()
+            cart.delete()
+            return HttpResponse('success')
+
+
+class Open_Cart_When_User_Is_Not_Authenticated(TemplateView):
+    template_name='apps/open_cart_when_user_is_not_authenticated.html'
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['product']= Product.objects.get(id=self.request.GET['product'])
+        return context

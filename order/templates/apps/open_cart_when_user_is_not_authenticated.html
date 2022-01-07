@@ -1,0 +1,29 @@
+{% load static %}
+<div class="product">
+    <img class="description_image" src="{% if product.description_image.all|length == 0 %}{% static 'image/products/default.png' %}{% else %}/{{product.description_image.all.0.image}}{% endif %}">
+    <div style="width: 30%">
+        <p><strong id="name_{{ product.id }}">{{ product.name }}</strong></p>
+        <button onclick='remove_cart({{ product.id }})' class="btn btn-danger"><i class="far fa-trash-alt"></i>    Xóa</button>
+    </div>
+    <div>
+        <div class='container'>
+            <div class='row price'>
+                <div class='col'></div>
+                <p id="price_{{ product.id }}" class='col'>{{ product.price }}</p>
+                <div class='col'></div>
+            </div>
+            <div class='row change-count'>
+                <p class='col button' style="border-right: rgb(92, 92, 92) solid 1px;" id="reduce_{{ product.id }}" onclick="reduce({{ product.id }})">-</p>
+                <p id='count_{{ product.id }}' class='col' onchange='total({{ product.id }})'>${amount}</p>
+                <p class='col button' style="border-left: rgb(92, 92, 92) solid 1px;" onclick="add({{ product.id }})">+</p>
+            </div>
+            <div class='total'>
+                <p>Thành tiền:</p>
+                <p id='total_{{ product.id }}'></p>
+            </div>
+        </div>
+    </div>
+    <div>
+        <input type='checkbox' value="{{ product.id }}" onclick='check_checkbox(this)' >
+    </div>
+</div>
