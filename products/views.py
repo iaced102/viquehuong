@@ -25,7 +25,9 @@ class List_Products(TemplateView):
 
         if self.request.user.is_authenticated:
             get_cart = Q(user__username = self.request.user.username)
-            context['cart'] = Cart.objects.get(get_cart)
+            if len(Cart.objects.filter(get_cart))==0:
+                Cart.objects.create(user = self.request.user)
+            context['cart'] = Cart.objects.filter(get_cart)
         return context
     
 
