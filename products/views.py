@@ -27,7 +27,7 @@ class List_Products(TemplateView):
             get_cart = Q(user__username = self.request.user.username)
             if len(Cart.objects.filter(get_cart))==0:
                 Cart.objects.create(user = self.request.user)
-            context['cart'] = Cart.objects.filter(get_cart)
+            context['cart'] = Cart.objects.filter(get_cart)[0]
         return context
     
 

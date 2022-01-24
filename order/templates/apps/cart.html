@@ -138,7 +138,7 @@
                             for(let item in cart_amount)
                                 {
                                     cart_amount[item][0] = $(`#count_${ cart_amount[item][1] }`).html()
-                                    cart.push([cart_amount[item][1],cart_amount[item][0]])
+                                    cart.push([cart_amount[item][1],parseInt(cart_amount[item][0])])
 
                                 }
                             localStorage.setItem("cart",JSON.stringify(cart))

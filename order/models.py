@@ -1,3 +1,4 @@
+from email.policy import default
 from typing import cast
 from django.db import models
 from products.models import Product
@@ -40,9 +41,12 @@ class Non_Active_Order(models.Model):
 
 
 class Active_Order(models.Model):
+    status          = models.BooleanField(default = False)
     list_order      = models.ManyToManyField(Order)
     address         = models.CharField(max_length=250)
     customer_name   = models.CharField(max_length=30)
     phone_number    = models.CharField(max_length=15)
     total_price    = models.CharField(max_length=30, blank=True)
     note        = models.TextField(blank=True)
+    def __str__(self):
+        return self.customer_name

@@ -218,6 +218,7 @@
         function select_province(province_li)
             {
                 $("#input_select_province").attr('value',province_li.innerHTML)
+                console.log(province_li.innerHTML)
                 $("#list_province").hide()
                 for(let i of province_api)
                     {
@@ -357,7 +358,22 @@
                                 $("#comfirm_order").attr("style", 'display:none')
                                 alert("đặt hàng thành công")
                                 $('#background').attr('style', 'display: none')
-                                for(let i in JSON.parse(localStorage.getItem("cart")))
+                                if("{{ user.is_authenticated }}" === "False")
+                                    {
+                                        var cart = []
+                                        {% for item in non_cart.cart.all %}
+                                            cart.push(parseInt({{ item.product.id }}))
+                                        {% endfor %}
+                                        local_cart = []
+                                        for(let i of JSON.parse(localStorage.getItem("cart")))
+                                            {
+                                                if(cart.indexOf(i[0]) == -1)
+                                                    {
+                                                        local_cart.push(i)
+                                                    }
+                                            }
+                                            localStorage.setItem("cart",JSON.stringify(local_cart))
+                                    }
                                 history.go(-1)
                             }
 
