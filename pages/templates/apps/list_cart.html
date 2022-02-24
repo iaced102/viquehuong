@@ -1,0 +1,23 @@
+<div>
+    <table class='table'>
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">tên khách hàng</th>
+                <th scope="col">số lượng</th>
+                <th scope="col">giá trị đơn hàng</th>
+            </tr>
+        </thead>
+        {% for item in active_order %}
+            <tr>
+                <th scope="row">{{ forloop.counter }}</th>
+                <td>{{ item.customer_name }}</td>
+                <td>{{ item.total }}</td>
+                <td>{{ item.total_price }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <ul class="count_page" id="count_page">
+        
+    </ul>
+</div>

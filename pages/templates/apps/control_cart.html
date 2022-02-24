@@ -1,75 +1,279 @@
-{% load static%}
+{% load static %}
 <!DOCTYPE html>
 <html>
     <head>
         <meta charset="UTF-8">
+        <link rel="shortcut icon" href="#">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
         <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-        <link rel="stylesheet" type='text/css' href="{% static 'css/control_cart.css' %}" >
+        <link rel="stylesheet" href="{% static 'css/apps/control_cart.css' %}" >
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     </head>
-    <body>
-        <div id="header">
-            <div class="sidebar">
-                <div class="logo-details">
+   <body>
+       <div class="sidebar">
+           <div class="logo-details">
                 <i class='bx bxl-django icon'></i>
-                    <div class="logo_name">Blog Project</div>
-                    <i class='bx bx-menu' id="btn" ></i>
+                <div class="logo_name">Blog Project</div>
+               <i class='bx bx-menu' id="btn" ></i>
+           </div>
+           <ul class="nav-list">
+               <li>
+                   <i class='bx bx-search' ></i>
+                   <input type="text" placeholder="Search...">
+                   <span class="tooltip">Search</span>
+               </li>
+               <li>
+                   <a href="{% url 'home'%}">
+                   <i class='bx bx-grid-alt'></i>
+                   <span class="links_name">List Items</span>
+                   </a>
+                   <span class="tooltip">List Items</span>
+               </li>
+               <li>
+                   <a href="#">
+                       <i class='bx bx-add-to-queue'></i>
+                       <span class="links_name">Create Items</span>
+                   </a>
+                   <span class="tooltip">Create Item</span>
+               </li>
+           </ul>
+        </div>
+           
+        <script>
+           let sidebar = document.querySelector(".sidebar");
+           let closeBtn = document.querySelector("#btn");
+           let searchBtn = document.querySelector(".bx-search");
+           closeBtn.addEventListener("click", ()=>{
+               sidebar.classList.toggle("open");
+               menuBtnChange();//calling the function(optional)
+           });
+           searchBtn.addEventListener("click", ()=>{ // Sidebar open when you click on the search iocn
+               sidebar.classList.toggle("open");
+               menuBtnChange(); //calling the function(optional)
+           });
+           // following are the code to change sidebar button(optional)
+           function menuBtnChange() {
+           if(sidebar.classList.contains("open")){
+               closeBtn.classList.replace("bx-menu", "bx-menu-alt-right");//replacing the iocns class
+           }else {
+               closeBtn.classList.replace("bx-menu-alt-right","bx-menu");//replacing the iocns class
+           }
+           }
+
+        </script>
+        <section class='section'>
+            <div class='container custom_container'>
+                <h3 class="title" id="title">Tổng hợp đơn hàng:</h3>
+                <div id="table_cart">
+                    <table class='table'>
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">tên khách hàng</th>
+                                <th scope="col">số lượng</th>
+                                <th scope="col">giá trị đơn hàng</th>
+                            </tr>
+                        </thead>
+                        {% for item in active_order %}
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>{{ item.customer_name }}</td>
+                                <td>{{ item.total }}</td>
+                                <td>{{ item.total_price }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
                 </div>
-                <ul class="nav-list">
-                <li>
-                    <i class='bx bx-search' ></i>
-                    <input type="text" placeholder="Search...">
-                    <span class="tooltip">Search</span>
-                </li>
-                <li>
-                    <a href="{% url 'home'%}">
-                    <i class='bx bx-grid-alt'></i>
-                    <span class="links_name">List Items</span>
-                    </a>
-                    <span class="tooltip">List Items</span>
-                </li>
-                <li>
-                    <a href="#">
-                        <i class='bx bx-add-to-queue'></i>
-                        <span class="links_name">Create Items</span>
-                    </a>
-                    <span class="tooltip">Create Item</span>
-                </li>
+                <ul class="count_page" id="count_page">
+                        
                 </ul>
             </div>
-            
-            <script>
-            let sidebar = document.querySelector(".sidebar");
-            let closeBtn = document.querySelector("#btn");
-            let searchBtn = document.querySelector(".bx-search");
-            closeBtn.addEventListener("click", ()=>{
-                sidebar.classList.toggle("open");
-                menuBtnChange();//calling the function(optional)
-            });
+        </section>
+        <script>
+            var count_page =  parseInt("{{ count_page }}")
+            var list_counter = []
+            var current_id =1
+            for(let i =1; i<=count_page; i++)
+                {
+                    list_counter.push(i)
+                }
+            if(count_page < 10)
+                {
+                    for(let i of list_counter)
+                        {
+                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                        }
+                }
+            else
+                {
+                    for(let i of list_counter.slice(0,4))
+                        {
+                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                        }
+                    $("#count_page").append(`<li style="padding: 10px 20px;">..........</li>`)
+                    for(let i of list_counter.slice(count_page-4,count_page+1))
+                        {
+                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                        }
+                }
+            function choice_page(id)
+                {
+                    $("#count_page").html('')
+                    var count_page = parseInt("{{ count_page }}")
+                    var list_counter = []
+                    for(let i =1; i<=count_page; i++)
+                        {
+                            list_counter.push(i)
+                        }
 
-            searchBtn.addEventListener("click", ()=>{ // Sidebar open when you click on the search iocn
-                sidebar.classList.toggle("open");
-                menuBtnChange(); //calling the function(optional)
-            });
 
-            // following are the code to change sidebar button(optional)
-            function menuBtnChange() {
-            if(sidebar.classList.contains("open")){
-                closeBtn.classList.replace("bx-menu", "bx-menu-alt-right");//replacing the iocns class
-            }else {
-                closeBtn.classList.replace("bx-menu-alt-right","bx-menu");//replacing the iocns class
-            }
-            }
+                    if(id <4 )
+                        {
+                            if(count_page < 10)
+                                {
+                                    for(let i of list_counter)
+                                        {
+                                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                                        }
+                                }
+                            else
+                                {
+                                    for(let i of list_counter.slice(0,4))
+                                        {
+                                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                                        }
+                                    $("#count_page").append(`<li style="padding: 10px 20px;">..........</li>`)
+                                    for(let i of list_counter.slice(count_page-4,count_page+1))
+                                        {
+                                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                                        }
+                                }
+                        }
+                    else if(id == 4)
+                        {
+                            if(count_page < 10)
+                                {
+                                    for(let i of list_counter)
+                                        {
+                                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                                        }
+                                }
+                            else
+                                {
+                                    for(let i of list_counter.slice(0,6))
+                                        {
+                                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                                        }
+                                    $("#count_page").append(`<li style="padding: 10px 20px;">..........</li>`)
+                                    for(let i of list_counter.slice(count_page-4,count_page+1))
+                                        {
+                                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                                        }
+                                }
+                        }
+                    else if(id <=6 && id >4)
+                        {
+                            if(count_page < 10)
+                                {
+                                    for(let i of list_counter)
+                                        {
+                                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                                        }
+                                }
+                            else
+                                {
+                                    for(let i of list_counter.slice(0,7))
+                                        {
+                                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                                        }
+                                    $("#count_page").append(`<li style="padding: 10px 20px;">..........</li>`)
+                                    for(let i of list_counter.slice(count_page-4,count_page+1))
+                                        {
+                                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                                        }
+                                }
+                        }
+                    else if(id>=7 && id<=count_page-6)
+                        {
+                            if(count_page < 10)
+                                {
+                                    for(let i of list_counter)
+                                        {
+                                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                                        }
+                                }
+                            else
+                                {
+                                    for(let i of list_counter.slice(0,4))
+                                        {
+                                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                                        }
 
-            </script>
-        </div>
-        <div>
-            <h3>Tổng hợp đơn hàng:</h3>
-        </div>
+                                    $("#count_page").append(`<li style="padding: 10px 20px;">.....</li>`)
+                                    for(let i= id-1; i<=id+1; i++)
+                                        {
+                                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                                        }
+                                    $("#count_page").append(`<li style="padding: 10px 20px;">.....</li>`)
+                                    for(let i of list_counter.slice(count_page-4,count_page+1))
+                                        {
+                                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                                        }
+                                }
+                        }
+                    else if(id>count_page-6 && id <= count_page-4)
+                        {
+                            
+                            if(count_page < 10)
+                                {
+                                    for(let i of list_counter)
+                                        {
+                                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                                        }
+                                }
+                            else
+                                {
+                                    for(let i of list_counter.slice(0,4))
+                                        {
+                                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                                        }
+                                    $("#count_page").append(`<li style="padding: 10px 20px;">..........</li>`)
+                                    for(let i of list_counter.slice(count_page-6,count_page+1))
+                                        {
+                                            $("#count_page").append(`<li class="pages" id="li_${i}" onclick="choice_page(${i})">${i}</li>`)
+                                        }
+                                }
+                        }
+                    else
+                        {
+                            
+                        }
+                    
+                    $.ajax({
+                        url: "{% url 'choice_page' %}",
+                        method: 'GET',
+                        data: {
+                            'count': id
+                        },
+                        success: function(data){
+                                $("#table_cart").html(data)
+                                $(`#li_${current_id}`).removeClass('pages_choice')
+                                current_id = id
+                                $(`#li_${id}`).addClass('pages_choice')
+                            }
+                    })
+                    
+                    
+                }
+            $(document).ready(()=>{
+                $(`#li_1`).addClass('pages_choice')
+            })
+
+
+        </script>
     </body>
 </html>

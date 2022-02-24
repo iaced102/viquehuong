@@ -46,6 +46,7 @@ class Active_Order(models.Model):
     address         = models.CharField(max_length=250)
     customer_name   = models.CharField(max_length=30)
     phone_number    = models.CharField(max_length=15)
+    total           = models.IntegerField(default=0)
     total_price    = models.CharField(max_length=30, blank=True)
     note        = models.TextField(blank=True)
     def __str__(self):

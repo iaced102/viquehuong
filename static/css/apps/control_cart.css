@@ -1,8 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
-body
-    {
-        background-color: red;
-    }
 *{
   margin: 0;
   padding: 0;
@@ -271,4 +267,35 @@ section{
 .filter-selects option
     {
         outline: none;
+    }
+
+.custom_container
+    {
+      margin-top: 80px;
+    }
+
+
+.count_page
+    {
+      list-style-type: none;
+      display: flex;
+      justify-content: center;
+    }
+
+
+.pages
+    {
+      cursor: pointer;
+      padding: 10px 20px;
+      border-radius: 5px;
+    }
+
+.pages:hover
+    {
+      color:#d87811;
+    }
+
+.pages_choice
+    {
+      background: #d87811;
     }
